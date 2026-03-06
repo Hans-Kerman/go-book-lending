@@ -1,0 +1,23 @@
+server:
+  port: [server-port]
+
+pgsql:
+  host: [sql-host]
+  port: [sql-port]
+  user: [sql-name]
+  password: [sql-pwd]
+  dbname: [db-name]
+  max_idle_conns: 
+  max_open_conns: 
+  conn_max_lifetime: 1h
+
+redis:
+  host: [redis-host]
+  port: [redis-port]
+  password: [redis-pwd]
+  pool_size: 
+  min_idle_conns: 
+
+jwt:
+  secret: [256bit-secret]
+  expire: [time.Duration string]
