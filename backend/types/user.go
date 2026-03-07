@@ -6,6 +6,6 @@ import (
 
 type NewUser struct {
 	gorm.Model
-	UserName string `binding:"required" json:"user_name"`
-	Password string `binding:"required" json:"password"`
+	UserName string `binding:"required,min=2,max=50" json:"user_name"`
+	Password string `binding:"required,min=6" json:"password"`
 }
