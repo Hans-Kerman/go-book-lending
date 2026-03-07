@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Hans-Kerman/go-book-lending/backend/global"
+	"github.com/Hans-Kerman/go-book-lending/backend/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -19,6 +20,10 @@ func InitDataBase() error {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return fmt.Errorf("error when init database: %w", err)
+	}
+
+	if err := global.Db.AutoMigrate(&models.User{}); err != nil {
+		return fmt.Errorf("error when AutoMigrate database: %w", err)
 	}
 
 	global.Db = db
