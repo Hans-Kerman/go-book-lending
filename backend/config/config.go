@@ -19,6 +19,7 @@ func InitConfig() error {
 		return fmt.Errorf("viper reading config file: %w", err)
 	}
 
+	AppConfig = &types.Config{}
 	if err = viper.Unmarshal(AppConfig); err != nil {
 		return fmt.Errorf("viper unmarshal config file: %w", err)
 	}
