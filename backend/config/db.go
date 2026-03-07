@@ -12,8 +12,8 @@ func InitDataBase() error {
 	dbConfig := AppConfig.Pgsql
 	dsn := fmt.Sprintf("host=%s user=%s password=%s "+
 		"dbname=%s port=%d sslmode=disable TimeZone=Asia/Shanghai",
-		&dbConfig.Host, &dbConfig.User, &dbConfig.Password,
-		&dbConfig.DbName, dbConfig.Port,
+		dbConfig.Host, dbConfig.User, dbConfig.Password,
+		dbConfig.DbName, dbConfig.Port,
 	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
