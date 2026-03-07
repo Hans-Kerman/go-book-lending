@@ -1,9 +1,19 @@
 package routers
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/Hans-Kerman/go-book-lending/backend/controllers"
+	"github.com/gin-gonic/gin"
+)
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+
+	//路由组1:公共访问
+	{
+		public := r.Group("/api")
+
+		public.POST("/register", controllers.Register)
+	}
 
 	return r
 }
