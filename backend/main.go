@@ -9,16 +9,22 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"time"
 
 	"github.com/Hans-Kerman/go-book-lending/backend/config"
 	"github.com/Hans-Kerman/go-book-lending/backend/routers"
+	"github.com/lmittmann/tint"
 )
 
 func main() {
-	slog.SetDefault(slog.New(slog.NewTextHandler(
-		os.Stdout,
-		&slog.HandlerOptions{Level: slog.LevelInfo},
-	)))
+	slog.SetDefault(slog.New(
+		tint.NewHandler(os.Stdout, &tint.Options{
+			Level:      slog.LevelInfo,
+			TimeFormat: time.Kitchen,
+			AddSource:  true,
+			NoColor:    false,
+		}),
+	))
 	if err := config.InitConfig(); err != nil {
 		slog.Error("error when init config", "error", err)
 		os.Exit(1)
