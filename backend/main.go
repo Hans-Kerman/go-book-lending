@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,11 +15,17 @@ import (
 )
 
 func main() {
+	slog.SetDefault(slog.New(slog.NewTextHandler(
+		os.Stdout,
+		&slog.HandlerOptions{Level: slog.LevelInfo},
+	)))
 	if err := config.InitConfig(); err != nil {
-		log.Fatalf("error when init config: %s", err.Error())
+		slog.Error("error when init config", "error", err)
+		os.Exit(1)
 	}
 	if err := config.InitDataBase(); err != nil {
-		log.Fatalf("error when init database: %s", err.Error())
+		slog.Error("error when connect database", "error", err)
+		os.Exit(1)
 	}
 
 	r := routers.SetupRouter()
@@ -31,21 +37,23 @@ func main() {
 	go func() {
 		fmt.Printf("Starting server on :%v\n", config.AppConfig.Server.Port) // 提前打印
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("error when start the server: %s", err.Error())
+			slog.Error("error when start the server", "error", err)
+			os.Exit(1)
 		}
 	}()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit //阻塞住主程序
-	log.Println("closing the server...")
+	slog.Info("closing the server...")
 
 	//收到信号则开始关闭服务器
 	ctx, cancel := context.WithTimeout(context.Background(), 10)
 
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatalf("error when shutdown: %s\n", err.Error())
+		slog.Error("error when shutdown", "error", err)
+		os.Exit(1)
 	}
-	log.Println("Server exiting...")
+	slog.Info("Server exiting...")
 }

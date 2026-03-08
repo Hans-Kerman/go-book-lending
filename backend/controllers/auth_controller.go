@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/Hans-Kerman/go-book-lending/backend/global"
@@ -18,13 +18,14 @@ func Register(c *gin.Context) {
 	newUserRequest := &types.NewUser{}
 
 	if err := c.ShouldBindJSON(newUserRequest); err != nil {
-		log.Println("error when bind json: " + err.Error())
 		if _, ok := err.(validator.ValidationErrors); ok { //类型断言：是字段不符合要求
+			slog.Info("error when bind json", "error", err)
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "Invalid field value",
 			})
 			return
 		}
+		slog.Error("error when bind json", "error", err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "error when bind json",
 		})
@@ -33,7 +34,7 @@ func Register(c *gin.Context) {
 
 	HashedPwd, err := pkg.HashPassword(newUserRequest.Password)
 	if err != nil {
-		log.Println("error when hash password: " + err.Error())
+		slog.Error("error when hash password", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "error when hash password",
 		})
@@ -49,13 +50,13 @@ func Register(c *gin.Context) {
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) { //键名重复
-			log.Println("name conflict: " + err.Error())
+			slog.Info("name conflict", "error", err)
 			c.JSON(http.StatusConflict, gin.H{
 				"error": "name conflict",
 			})
 			return
 		}
-		log.Println("error when create database record: " + err.Error())
+		slog.Error("error when create database record", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Unknown error",
 		})
@@ -64,7 +65,7 @@ func Register(c *gin.Context) {
 
 	token, err := pkg.GenerateJWT(newUser.ID, newUser.Username, newUser.Role)
 	if err != nil {
-		log.Println("error when generate token: " + err.Error())
+		slog.Error("error when generate token", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "error when generate token",
 		})
