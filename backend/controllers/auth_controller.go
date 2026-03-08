@@ -10,25 +10,12 @@ import (
 	"github.com/Hans-Kerman/go-book-lending/backend/pkg"
 	"github.com/Hans-Kerman/go-book-lending/backend/types"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
 
 func Register(c *gin.Context) {
 	newUserRequest := &types.NewUser{}
-
-	if err := c.ShouldBindJSON(newUserRequest); err != nil {
-		if _, ok := err.(validator.ValidationErrors); ok { //类型断言：是字段不符合要求
-			slog.Info("error when bind json", "error", err)
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid field value",
-			})
-			return
-		}
-		slog.Error("error when bind json", "error", err)
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "error when bind json",
-		})
+	if ok := pkg.BindNewUser(c, newUserRequest); !ok {
 		return
 	}
 
