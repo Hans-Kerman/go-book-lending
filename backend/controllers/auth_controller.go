@@ -62,3 +62,53 @@ func Register(c *gin.Context) {
 		"token": token,
 	})
 }
+
+func Login(c *gin.Context) {
+	newUserRequest := &types.NewUser{}
+	if ok := pkg.BindNewUser(c, newUserRequest); !ok {
+		return
+	}
+
+	expectedUser := &models.User{
+		Username: newUserRequest.UserName,
+	}
+	if result := global.Db.Take(expectedUser); result.Error != nil {
+		err := result.Error
+		switch err {
+		case gorm.ErrRecordNotFound:
+			slog.Info("user not found in database", "error", err)
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "username or password incorrect",
+			})
+			return
+		default:
+			slog.Error("error when select database", "error", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Internal server error",
+			})
+			return
+		}
+	}
+
+	if err := pkg.CheckPassword(newUserRequest.Password, expectedUser.Password); err != nil {
+		slog.Info("password validate failed", "error", err)
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "username or password incorrect",
+		})
+		return
+	}
+
+	token, err := pkg.GenerateJWT(expectedUser.ID, expectedUser.Username, expectedUser.Role)
+	if err != nil {
+		slog.Error("error when generate jwt", "error", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error",
+		})
+		return
+	}
+
+	slog.Info("user login succeeded")
+	c.JSON(http.StatusOK, gin.H{
+		"token": token,
+	})
+}
