@@ -22,7 +22,7 @@ func InitDataBase() error {
 		return fmt.Errorf("error when init database: %w", err)
 	}
 
-	if err := global.Db.AutoMigrate(&models.User{}); err != nil {
+	if err := db.AutoMigrate(&models.User{}); err != nil {
 		return fmt.Errorf("error when AutoMigrate database: %w", err)
 	}
 
