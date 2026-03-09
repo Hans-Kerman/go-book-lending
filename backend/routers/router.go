@@ -16,6 +16,7 @@ func SetupRouter() *gin.Engine {
 		public.POST("/login", controllers.Login)
 
 		public.GET("/books", controllers.GetBooksByPage)
+		public.GET("/book/:isbn", controllers.GetBookByISBN)
 	}
 
 	return r

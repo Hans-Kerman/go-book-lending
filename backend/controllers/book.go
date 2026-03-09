@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -8,6 +9,7 @@ import (
 	"github.com/Hans-Kerman/go-book-lending/backend/global"
 	"github.com/Hans-Kerman/go-book-lending/backend/models"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func GetBooksByPage(c *gin.Context) {
@@ -54,5 +56,32 @@ func GetBooksByPage(c *gin.Context) {
 		"page_size":  pageSize,
 		"totalPages": (total + int64(pageSize) - 1) / int64(pageSize),
 		"books":      books,
+	})
+}
+
+func GetBookByISBN(c *gin.Context) {
+	bookISBN := c.Param("isbn")
+
+	expectedBook := &models.Book{
+		ISBN: bookISBN,
+	}
+
+	if err := global.Db.Model(&models.Book{}).Where(expectedBook).First(expectedBook).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			slog.Info("client request unstored book")
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Book not found",
+			})
+			return
+		}
+		slog.Error("error when query book in database", "error", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"book": expectedBook,
 	})
 }
