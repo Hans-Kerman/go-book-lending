@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Hans-Kerman/go-book-lending/backend/config"
+	"github.com/Hans-Kerman/go-book-lending/backend/pkg"
 	"github.com/Hans-Kerman/go-book-lending/backend/routers"
 	"github.com/lmittmann/tint"
 )
@@ -25,6 +26,11 @@ func main() {
 			NoColor:    false,
 		}),
 	))
+
+	if err := pkg.InitStaticDir(); err != nil {
+		slog.Error("error when touch pictures folder", "error", err)
+		os.Exit(1)
+	}
 	if err := config.InitConfig(); err != nil {
 		slog.Error("error when init config", "error", err)
 		os.Exit(1)
