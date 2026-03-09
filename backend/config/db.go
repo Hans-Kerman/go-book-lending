@@ -17,7 +17,9 @@ func InitDataBase() error {
 		dbConfig.DbName, dbConfig.Port,
 	)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		TranslateError: true,
+	})
 	if err != nil {
 		return fmt.Errorf("error when init database: %w", err)
 	}
