@@ -25,6 +25,12 @@ func InitDataBase() error {
 	if err := db.AutoMigrate(&models.User{}); err != nil {
 		return fmt.Errorf("error when AutoMigrate database: %w", err)
 	}
+	if err := db.AutoMigrate(&models.Book{}); err != nil {
+		return fmt.Errorf("error when AutoMigrate database: %w", err)
+	}
+	if err := db.AutoMigrate(&models.LendRecord{}); err != nil {
+		return fmt.Errorf("error when AutoMigrate database: %w", err)
+	}
 
 	global.Db = db
 	return nil
