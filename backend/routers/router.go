@@ -24,6 +24,9 @@ func SetupRouter() *gin.Engine {
 	{
 		auth.Use(middlewares.ParseJWT())
 
+		auth.POST("/borrow", controllers.LendBook)
+		auth.POST("/return", controllers.ReturnBook)
+
 		//嵌套路由组3:admin鉴权访问
 		admin := auth.Group("/admin")
 		{
