@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/Hans-Kerman/go-book-lending/backend/global"
 	"github.com/Hans-Kerman/go-book-lending/backend/models"
@@ -107,4 +108,82 @@ func LendBook(c *gin.Context) {
 }
 
 func ReturnBook(c *gin.Context) {
+	newReturnRequire := &types.BorrowRequire{}
+	env := pkg.ReadCtxEnv(c, newReturnRequire)
+	if env == nil {
+		//ReadCtxEnv()中已经写入错误响应
+		return
+	}
+
+	if env.Role != models.Admin &&
+		env.ID != newReturnRequire.BorrowReader {
+		slog.Info("client try to return book with ID mismatch",
+			"sender", env.ID,
+			"req_user", newReturnRequire.BorrowReader,
+		)
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "only admin can return for others",
+		})
+		return
+	}
+
+	targetRecord := &models.LendRecord{
+		BorrowReader: newReturnRequire.BorrowReader,
+		BookID:       newReturnRequire.BookID,
+		ReturnTime:   nil,
+	}
+	//构造事务
+	err := global.Db.Transaction(func(tx *gorm.DB) error {
+		//查询待归还的记录
+		err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			Where("borrow_reader = ? AND book_id = ? AND return_time IS NULL",
+				targetRecord.BorrowReader, targetRecord.BookID).
+			First(targetRecord).Error
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				slog.Info("Target book record does not exist")
+				return err
+			}
+			slog.Error("error when query record for returning", "error", err)
+			return err
+		}
+
+		//更新图书存量
+		err = tx.Model(&models.Book{}).Where("isbn = ?", targetRecord.BookID).
+			Update("available", gorm.Expr("available + 1")).Error
+		if err != nil {
+			slog.Error("error when update book num", "error", err)
+			return err
+		}
+
+		//更新归还时间
+		err = tx.Model(&models.LendRecord{}).
+			Where("id = ?", targetRecord.ID).
+			Update("return_time", time.Now()).Error
+		if err != nil {
+			slog.Error("error when update return time", "error", err)
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Borrow record not found",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal serverl error",
+		})
+		return
+	}
+
+	now := time.Now()
+	targetRecord.ReturnTime = &now
+	c.JSON(http.StatusOK, gin.H{
+		"data": targetRecord,
+	})
 }
