@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/Hans-Kerman/go-book-lending/backend/config"
-	"github.com/Hans-Kerman/go-book-lending/backend/models"
 	"github.com/Hans-Kerman/go-book-lending/backend/pkg"
+	"github.com/Hans-Kerman/go-book-lending/backend/types"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -101,7 +101,7 @@ func CheckAdminRole() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		role, _ := ctx.Get("Role")
 		userID, _ := ctx.Get("ID")
-		if role == models.Admin {
+		if role == types.Admin {
 			ctx.Next()
 		} else {
 			slog.Info("reader client require admin api", "user_id", userID, "role", role, "api", ctx.Request.URL)

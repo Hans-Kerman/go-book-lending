@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/Hans-Kerman/go-book-lending/backend/config"
-	"github.com/Hans-Kerman/go-book-lending/backend/models"
 	"github.com/Hans-Kerman/go-book-lending/backend/types"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -15,13 +14,13 @@ import (
 )
 
 type UserClaims struct {
-	UserID   uint            `json:"user_id"`
-	UserName string          `json:"user_name"`
-	Role     models.UserRole `json:"role"`
+	UserID   uint           `json:"user_id"`
+	UserName string         `json:"user_name"`
+	Role     types.UserRole `json:"role"`
 	jwt.RegisteredClaims
 }
 
-func GenerateJWT(userID uint, username string, role models.UserRole) (string, error) {
+func GenerateJWT(userID uint, username string, role types.UserRole) (string, error) {
 	JWTConfig := config.AppConfig.JWT
 
 	claim := &UserClaims{
@@ -64,7 +63,7 @@ func ReadCtxEnv(c *gin.Context, targetStruct any) *types.CtxEnvUser {
 		})
 		return nil
 	}
-	role, ok := roleAny.(models.UserRole)
+	role, ok := roleAny.(types.UserRole)
 	if !ok {
 		slog.Error("error when read Role from parsed jwt")
 		c.JSON(http.StatusForbidden, gin.H{

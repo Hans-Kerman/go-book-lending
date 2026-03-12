@@ -30,7 +30,7 @@ func Register(c *gin.Context) {
 
 	newUser := &models.User{
 		Username: newUserRequest.UserName,
-		Role:     models.Reader,
+		Role:     types.Reader,
 		Password: HashedPwd,
 	}
 	err = global.Db.Create(newUser).Error

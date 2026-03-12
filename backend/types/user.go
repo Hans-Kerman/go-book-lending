@@ -1,6 +1,11 @@
 package types
 
-import "github.com/Hans-Kerman/go-book-lending/backend/models"
+type UserRole uint8
+
+const (
+	Admin UserRole = iota
+	Reader
+)
 
 type NewUser struct {
 	UserName string `binding:"required,min=2,max=50" json:"user_name"`
@@ -10,5 +15,5 @@ type NewUser struct {
 type CtxEnvUser struct {
 	ID       uint
 	UserName string
-	Role     models.UserRole
+	Role     UserRole
 }
