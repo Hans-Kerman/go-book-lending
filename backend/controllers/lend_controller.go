@@ -16,6 +16,7 @@ import (
 )
 
 var bookNumInsufficientErr = errors.New("Insufficient book stock quantity")
+var bookDataDisappearErr = errors.New("Unknown error cause book data disappeared")
 
 func LendBook(c *gin.Context) {
 	newLendRequire := &types.BorrowRequire{}
@@ -149,11 +150,15 @@ func ReturnBook(c *gin.Context) {
 		}
 
 		//更新图书存量
-		err = tx.Model(&models.Book{}).Where("isbn = ?", targetRecord.BookID).
-			Update("available", gorm.Expr("available + 1")).Error
-		if err != nil {
+		result := tx.Model(&models.Book{}).Where("isbn = ?", targetRecord.BookID).
+			Update("available", gorm.Expr("available + 1"))
+		if result.Error != nil {
 			slog.Error("error when update book num", "error", err)
 			return err
+		}
+		if result.RowsAffected == 0 {
+			slog.Error("error when get book data", "error", err, "book_isbn", targetRecord.BookID)
+			return bookDataDisappearErr
 		}
 
 		//更新归还时间
@@ -172,6 +177,12 @@ func ReturnBook(c *gin.Context) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{
 				"error": "Borrow record not found",
+			})
+			return
+		}
+		if errors.Is(err, bookDataDisappearErr) {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Internal server error",
 			})
 			return
 		}
