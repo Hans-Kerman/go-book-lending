@@ -8,6 +8,7 @@ import (
 	"github.com/Hans-Kerman/go-book-lending/backend/global"
 	"github.com/Hans-Kerman/go-book-lending/backend/models"
 	"github.com/Hans-Kerman/go-book-lending/backend/pkg"
+	"github.com/Hans-Kerman/go-book-lending/backend/types"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -16,7 +17,7 @@ import (
 var bookNumInsufficientErr = errors.New("Insufficient book stock quantity")
 
 func LendBook(c *gin.Context) {
-	newLendRequire := &models.LendRecord{}
+	newLendRequire := &types.BorrowRequire{}
 	env := pkg.ReadCtxEnv(c, newLendRequire)
 	if env == nil {
 		//ReadCtxEnv()中已经写入错误响应
@@ -103,4 +104,7 @@ func LendBook(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"data": dbLendRecord,
 	})
+}
+
+func ReturnBook(c *gin.Context) {
 }
