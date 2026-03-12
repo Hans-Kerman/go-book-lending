@@ -16,7 +16,7 @@ func SetupRouter() *gin.Engine {
 		public.POST("/login", controllers.Login)
 
 		public.GET("/books", controllers.GetBooksByPage)
-		public.GET("/book/:isbn", controllers.GetBookByISBN)
+		public.GET("/book/:isbn", controllers.GetBookByURL)
 	}
 
 	//路由组2:jwt鉴权登录访问

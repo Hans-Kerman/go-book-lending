@@ -16,6 +16,31 @@ import (
 	"gorm.io/gorm"
 )
 
+func getBookByISBN(c *gin.Context, bookISBN string) {
+	expectedBook := &models.Book{
+		ISBN: bookISBN,
+	}
+
+	if err := global.Db.Model(&models.Book{}).Where(expectedBook).First(expectedBook).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			slog.Info("client request unstored book")
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Book not found",
+			})
+			return
+		}
+		slog.Error("error when query book in database", "error", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"book": expectedBook,
+	})
+}
+
 func GetBooksByPage(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
@@ -63,31 +88,9 @@ func GetBooksByPage(c *gin.Context) {
 	})
 }
 
-func GetBookByISBN(c *gin.Context) {
+func GetBookByURL(c *gin.Context) {
 	bookISBN := c.Param("isbn")
-
-	expectedBook := &models.Book{
-		ISBN: bookISBN,
-	}
-
-	if err := global.Db.Model(&models.Book{}).Where(expectedBook).First(expectedBook).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			slog.Info("client request unstored book")
-			c.JSON(http.StatusNotFound, gin.H{
-				"error": "Book not found",
-			})
-			return
-		}
-		slog.Error("error when query book in database", "error", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal server error",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"book": expectedBook,
-	})
+	getBookByISBN(c, bookISBN)
 }
 
 func PostNewBook(c *gin.Context) {
