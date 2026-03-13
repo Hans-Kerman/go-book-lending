@@ -6,4 +6,5 @@ type NewBookInfo struct {
 	ISBN           string `json:"isbn" binding:"required"`
 	Price          int    `json:"price"`
 	CoverPicBase64 []byte `json:"cover_pic_base64"`
+	Available      *int   `json:"available"`
 }
