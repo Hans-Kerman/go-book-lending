@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func getBookByISBN(c *gin.Context, bookISBN string) {
@@ -150,5 +151,90 @@ func PostNewBook(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"data": newBook,
+	})
+}
+
+func UpdateBook(c *gin.Context) {
+	newBookInfo := &types.NewBookInfo{}
+	if err := c.ShouldBindJSON(newBookInfo); err != nil {
+		switch e := err.(type) {
+		case validator.ValidationErrors:
+			slog.Info("New book request has no required value", "error", e)
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"error": "validation failed",
+			})
+			return
+		case *json.UnmarshalTypeError:
+			slog.Info("New book request has dismatch type", "error", e)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "value type dismatch",
+			})
+			return
+		case *json.SyntaxError:
+			slog.Info("New book request has syntax error", "error", e)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "json syntax error",
+			})
+			return
+		default:
+			slog.Error("error when unmarshal new book json", "error", e)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Internal server error",
+			})
+			return
+		}
+	}
+
+	storedBook := &models.Book{}
+
+	err := global.Db.Transaction(func(tx *gorm.DB) error {
+		result := tx.Where("isbn = ?", newBookInfo.ISBN).Clauses(clause.Locking{Strength: "UPDATE"}).First(storedBook)
+
+		if result.Error != nil {
+			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+				slog.Info("client try to update not-exist book", "isbn", newBookInfo.ISBN)
+				return result.Error
+			}
+			slog.Error("Unknown error when query book data", "error", result.Error)
+			return result.Error
+		}
+
+		if storedBook.EqualsDTO(newBookInfo) {
+			slog.Info("client update but no diffs", "isbn", newBookInfo.ISBN)
+			return nil
+		}
+
+		storedBook.Title = newBookInfo.Title
+		storedBook.Author = newBookInfo.Author
+		storedBook.Price = newBookInfo.Price
+		if newBookInfo.CoverPicBase64 != nil {
+			storedBook.CoverURL = pkg.ParsePicName(newBookInfo.CoverPicBase64)
+		}
+
+		if newBookInfo.Available != nil {
+			storedBook.Available = *newBookInfo.Available
+		}
+		result = tx.Save(storedBook)
+
+		if result.Error != nil {
+			slog.Error("error when update book", "error", result.Error)
+			return result.Error
+		}
+		return nil
+	})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Assigned book not found",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data": storedBook,
 	})
 }
