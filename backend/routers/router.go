@@ -34,6 +34,7 @@ func SetupRouter() *gin.Engine {
 			admin.Use(middlewares.CheckAdminRole())
 
 			admin.POST("/book", controllers.PostNewBook)
+			admin.PUT("/book", controllers.UpdateBook)
 		}
 	}
 
