@@ -1,6 +1,9 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"github.com/Hans-Kerman/go-book-lending/backend/types"
+	"gorm.io/gorm"
+)
 
 type Book struct {
 	gorm.Model
@@ -26,6 +29,19 @@ func (book1 *Book) Equals(book2 *Book) bool {
 		return false
 	}
 	if book1.CoverURL != book2.CoverURL {
+		return false
+	}
+	return true
+}
+
+func (orm *Book) EqualsDTO(dto *types.NewBookInfo) bool {
+	if orm.Title != dto.Title {
+		return false
+	}
+	if orm.Author != dto.Author {
+		return false
+	}
+	if orm.Price != dto.Price {
 		return false
 	}
 	return true
