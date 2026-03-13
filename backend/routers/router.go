@@ -35,6 +35,7 @@ func SetupRouter() *gin.Engine {
 
 			admin.POST("/book", controllers.PostNewBook)
 			admin.PUT("/book", controllers.UpdateBook)
+			admin.DELETE("book/del/:isbn", controllers.DelBook)
 		}
 	}
 

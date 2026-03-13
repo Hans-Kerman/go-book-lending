@@ -238,3 +238,27 @@ func UpdateBook(c *gin.Context) {
 		"data": storedBook,
 	})
 }
+
+func DelBook(c *gin.Context) {
+	isbn := c.Param("isbn")
+
+	result := global.Db.Where("isbn = ?", isbn).Delete(&models.Book{})
+
+	if result.Error != nil {
+		slog.Error("Unkonwn error when delete book", "error", result.Error)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error",
+		})
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		slog.Info("client try to delete no-exist book", "isbn", isbn)
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Target book not exist",
+		})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
