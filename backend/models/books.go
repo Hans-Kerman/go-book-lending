@@ -11,3 +11,22 @@ type Book struct {
 	Available int    //可借阅数量
 	CoverURL  string `gorm:"type:varchar(255);"` // 存储图片的访问路径
 }
+
+func (book1 *Book) Equals(book2 *Book) bool {
+	if book1.Title != book2.Title {
+		return false
+	}
+	if book1.Author != book2.Author {
+		return false
+	}
+	if book1.ISBN != book2.ISBN {
+		return false
+	}
+	if book1.Price != book2.Price {
+		return false
+	}
+	if book1.CoverURL != book2.CoverURL {
+		return false
+	}
+	return true
+}
