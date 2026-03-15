@@ -3,11 +3,14 @@ package routers
 import (
 	"github.com/Hans-Kerman/go-book-lending/backend/controllers"
 	"github.com/Hans-Kerman/go-book-lending/backend/middlewares"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+
+	r.Use(cors.New(middlewares.CORSConf))
 
 	//路由组1:公共访问
 	public := r.Group("/api/public")
