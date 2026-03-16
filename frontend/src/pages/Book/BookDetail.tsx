@@ -32,14 +32,19 @@ const BookDetailPage: React.FC = () => {
 
         // 2. 如果用户已登录，获取其借阅记录以判断是否已借阅此书
         if (isAuthenticated && user) {
-          const borrowsResponse = await apiClient.get<{ data: LendRecordResponse[] }>(`/user/borrows`);
-          const userRecords = borrowsResponse.data.data || [];
-          const hasBorrowed = userRecords.some(
-            record => record.book_id === isbn && !record.return_time
-          );
-          setIsBorrowed(hasBorrowed);
+          try {
+            const borrowsResponse = await apiClient.get<{ data: LendRecordResponse[] }>(`/user/borrows`);
+            const userRecords = borrowsResponse.data.data || [];
+            const hasBorrowed = userRecords.some(
+              record => record.book_id === isbn && !record.return_time
+            );
+            setIsBorrowed(hasBorrowed);
+          } catch (borrowErr) {
+            console.error('获取借阅记录失败:', borrowErr);
+          }
         }
-      } catch {
+      } catch (err) {
+        console.error('获取书籍详情失败:', err);
         setError('无法加载书籍详情，请检查书籍ISBN是否正确或稍后再试。');
       } finally {
         setLoading(false);

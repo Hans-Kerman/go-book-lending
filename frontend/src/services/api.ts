@@ -1,6 +1,7 @@
 // src/services/api.ts
 import axios from 'axios';
 import { API_BASE_URL } from '../config';
+import { useUserStore } from '../store/userStore';
 
 // 创建一个 Axios 实例
 const apiClient = axios.create({
@@ -41,8 +42,8 @@ apiClient.interceptors.response.use(
     // 对响应错误做点什么
     // 例如，如果收到 401 Unauthorized，可以重定向到登录页
     if (error.response && error.response.status === 401) {
-      // window.location.href = '/login';
-      console.error('Unauthorized request, redirecting to login may be needed.');
+      console.error('Unauthorized request, clearing token.');
+      useUserStore.getState().logout();
     }
     return Promise.reject(error);
   }

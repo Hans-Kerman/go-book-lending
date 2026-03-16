@@ -12,6 +12,12 @@ export default defineConfig({
         target: 'http://localhost:8080', // 后端服务地址
         changeOrigin: true, // 改变源，解决跨域问题
         // 后端的基础路径已经包含了 /api，所以这里不需要 rewrite
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            // 重写 Origin 请求头，防止由于浏览器访问 127.0.0.1 导致后端 CORS 403 拦截
+            proxyReq.setHeader('Origin', 'http://localhost:5173');
+          });
+        },
       },
     },
   },
