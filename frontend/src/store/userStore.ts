@@ -11,8 +11,8 @@ import { jwtDecode } from 'jwt-decode';
  * @property {number} iat - Token 签发时间戳
  */
 interface JwtPayload {
-  id: number;
-  name: string;
+  user_id: number;
+  user_name: string;
   role: 'admin' | 'user';
   exp: number;
   iat: number;
@@ -55,8 +55,8 @@ const decodeToken = (token: string): User | null => {
       return null;
     }
     return {
-      id: decoded.id,
-      name: decoded.name,
+      id: decoded.user_id,
+      name: decoded.user_name,
       role: decoded.role,
     };
   } catch (error) {
