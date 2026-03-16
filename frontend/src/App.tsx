@@ -63,7 +63,7 @@ const AppLayout: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <div className="logo" style={{ color: 'white', marginRight: '24px' }}>图书系统</div>
           <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['1']} items={[
-            { key: '1', label: <Link to="/">首页</Link> },
+            { key: '1', label: <Link to="/books">图书列表</Link> },
           ]} />
         </div>
         <div>
@@ -110,6 +110,7 @@ const App: React.FC = () => (
       <Routes>
         <Route path="/" element={<AppLayout />}>
           <Route index element={<BookListPage />} />
+          <Route path="books" element={<BookListPage />} />
           <Route path="book/:isbn" element={<BookDetailPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
