@@ -34,7 +34,7 @@ func GenerateJWT(userID uint, username string, role types.UserRole) (string, err
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 
-	return token.SignedString(JWTConfig.SecretStr)
+	return token.SignedString([]byte(JWTConfig.SecretStr))
 }
 
 func ReadCtxEnv(c *gin.Context, targetStruct any) *types.CtxEnvUser {
