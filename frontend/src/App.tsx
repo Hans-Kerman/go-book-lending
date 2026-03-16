@@ -2,6 +2,7 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Outlet, useNavigate } from 'react-router-dom';
 import { Layout, Menu, theme, Spin, Button, Typography, Dropdown } from 'antd';
+import type { MenuProps } from 'antd';
 import { useUserStore } from './store/userStore';
 
 // 懒加载页面组件
@@ -36,26 +37,32 @@ const AppLayout: React.FC = () => {
     navigate('/login');
   };
 
-  const userMenu = (
-    <Menu>
-      <Menu.Item key="username" disabled>
-        <Typography.Text>你好, {user?.name}</Typography.Text>
-      </Menu.Item>
-      <Menu.Divider />
-      {user?.role === 'admin' && (
-        <Menu.Item key="admin">
-          <Link to="/admin/books">图书管理</Link>
-        </Menu.Item>
-      )}
-      <Menu.Item key="my-borrows">
-        <Link to="/user/borrows">我的借阅</Link>
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="logout" onClick={handleLogout}>
-        退出登录
-      </Menu.Item>
-    </Menu>
-  );
+  const userMenuItems: MenuProps['items'] = [
+    {
+      key: 'username',
+      disabled: true,
+      label: <Typography.Text>你好, {user?.name}</Typography.Text>,
+    },
+    { type: 'divider' as const },
+    ...(user?.role === 'admin'
+      ? [
+          {
+            key: 'admin',
+            label: <Link to="/admin/books">图书管理</Link>,
+          },
+        ]
+      : []),
+    {
+      key: 'my-borrows',
+      label: <Link to="/user/borrows">我的借阅</Link>,
+    },
+    { type: 'divider' as const },
+    {
+      key: 'logout',
+      label: '退出登录',
+      onClick: handleLogout,
+    },
+  ];
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -68,7 +75,7 @@ const AppLayout: React.FC = () => {
         </div>
         <div>
           {isAuthenticated ? (
-            <Dropdown menu={{ items: userMenu.props.items }} placement="bottomRight">
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
               <Button type="primary">欢迎, {user?.name}</Button>
             </Dropdown>
           ) : (
