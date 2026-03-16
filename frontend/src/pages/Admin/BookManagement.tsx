@@ -1,8 +1,17 @@
 // src/pages/Admin/BookManagement.tsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { Table, Button, Space, Popconfirm, message, Spin, Alert, Modal, Form, Input, InputNumber } from 'antd';
+import { Table, Button, Space, Popconfirm, message, Alert, Modal, Form, Input, InputNumber } from 'antd';
+import type { TablePaginationConfig } from 'antd';
 import apiClient from '../../services/api';
 import type { Book, NewBookInfo } from '../../types';
+
+// 后端 API 返回的书籍列表响应结构
+interface BooksResponse {
+  total: number;
+  page: number;
+  page_size: number;
+  books: Book[];
+}
 
 // 定义表单和模态框的状态
 type ModalState = {
@@ -13,21 +22,34 @@ type ModalState = {
 
 const BookManagementPage: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<TablePaginationConfig>({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
   const [modalState, setModalState] = useState<ModalState>({ visible: false, mode: 'add', book: null });
   const [form] = Form.useForm();
 
-  // 获取所有书籍
-  const fetchBooks = useCallback(async () => {
+  const fetchBooks = useCallback(async (params: { page: number; pageSize: number }) => {
     setLoading(true);
+    setError(null);
     try {
-      // 注意：后端分页接口可能不适合一次性获取所有书籍
-      // 这里暂时假设有一个能返回所有书籍的接口或调整分页参数
-      const response = await apiClient.get<{ books: Book[] }>('/public/books?page_size=999');
-      setBooks(response.data.books || []);
+      const response = await apiClient.get<BooksResponse>('/public/books', {
+        params: {
+          page: params.page,
+          page_size: params.pageSize,
+        },
+      });
+      setBooks(response.data.books);
+      setPagination(p => ({
+        ...p,
+        total: response.data.total,
+        current: response.data.page,
+      }));
     } catch (err) {
-      const errorMsg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || '获取书籍列表失败';
+      const errorMsg = (err as { response?: { data?: { error: string } } }).response?.data?.error || '获取书籍列表失败';
       setError(errorMsg);
     } finally {
       setLoading(false);
@@ -35,7 +57,7 @@ const BookManagementPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetchBooks();
+    fetchBooks({ page: pagination.current!, pageSize: pagination.pageSize! });
   }, [fetchBooks]);
 
   // --- CRUD 操作 ---
@@ -44,7 +66,12 @@ const BookManagementPage: React.FC = () => {
     try {
       await apiClient.delete(`/admin/book/del/${isbn}`);
       message.success('删除成功');
-      fetchBooks(); // 重新获取数据
+      // 如果当前页只剩一项，删除后请求前一页
+      if (books.length === 1 && pagination.current! > 1) {
+        await fetchBooks({ page: pagination.current! - 1, pageSize: pagination.pageSize! });
+      } else {
+        await fetchBooks({ page: pagination.current!, pageSize: pagination.pageSize! });
+      }
     } catch (err) {
       const errorMsg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || '删除失败';
       message.error(errorMsg);
@@ -65,7 +92,8 @@ const BookManagementPage: React.FC = () => {
       }
       
       setModalState({ visible: false, mode: 'add', book: null });
-      fetchBooks(); // 重新获取数据
+      // 刷新当前页
+      fetchBooks({ page: pagination.current!, pageSize: pagination.pageSize! });
     } catch (info) {
       console.log('Validate Failed:', info);
       message.error('请检查表单输入！');
@@ -88,6 +116,10 @@ const BookManagementPage: React.FC = () => {
     setModalState({ visible: false, mode: 'add', book: null });
   };
 
+
+  const handleTableChange = (newPagination: TablePaginationConfig) => {
+    fetchBooks({ page: newPagination.current!, pageSize: newPagination.pageSize! });
+  };
 
   const columns = [
     { title: 'ISBN', dataIndex: 'isbn', key: 'isbn' },
@@ -113,15 +145,21 @@ const BookManagementPage: React.FC = () => {
     },
   ];
 
-  if (loading) return <Spin />;
-  if (error) return <Alert message="Error" description={error} type="error" showIcon />;
+  if (error && !loading) return <Alert message="Error" description={error} type="error" showIcon />;
 
   return (
     <div>
       <Button type="primary" onClick={showAddModal} style={{ marginBottom: 16 }}>
         添加新书
       </Button>
-      <Table columns={columns} dataSource={books} rowKey="isbn" />
+      <Table
+        columns={columns}
+        dataSource={books}
+        rowKey="isbn"
+        pagination={pagination}
+        loading={loading}
+        onChange={handleTableChange}
+      />
 
       <Modal
         title={modalState.mode === 'add' ? '添加新书' : '编辑书籍'}
