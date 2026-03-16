@@ -42,6 +42,15 @@ func getBookByISBN(c *gin.Context, bookISBN string) {
 	})
 }
 
+// @Summary Get books by page
+// @Description Get a paginated list of books
+// @Tags Books
+// @Produce  json
+// @Param   page      query   int     false  "Page number"
+// @Param   page_size query   int     false  "Page size"
+// @Success 200 {object} map[string]interface{} "{"total": 1, "page": 1, "page_size": 20, "totalPages": 1, "books": []models.Book}"
+// @Failure 500 {object} map[string]string "{"error": "Internal server error"}"
+// @Router /public/books [get]
 func GetBooksByPage(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
@@ -89,11 +98,32 @@ func GetBooksByPage(c *gin.Context) {
 	})
 }
 
+// @Summary Get a book by ISBN
+// @Description Get a single book by its ISBN
+// @Tags Books
+// @Produce  json
+// @Param   isbn     path    string     true        "Book ISBN"
+// @Success 200 {object} map[string]models.Book "{"book": models.Book}"
+// @Failure 404 {object} map[string]string "{"error": "Book not found"}"
+// @Failure 500 {object} map[string]string "{"error": "Internal server error"}"
+// @Router /public/book/{isbn} [get]
 func GetBookByURL(c *gin.Context) {
 	bookISBN := c.Param("isbn")
 	getBookByISBN(c, bookISBN)
 }
 
+// @Summary Add a new book
+// @Description Add a new book to the database (Admin only)
+// @Tags Admin
+// @Accept  json
+// @Produce  json
+// @Param   book     body    types.NewBookInfo     true        "New Book Info"
+// @Success 200 {object} map[string]models.Book "{"data": models.Book}"
+// @Failure 400 {object} map[string]string "{"error": "error_message"}"
+// @Failure 422 {object} map[string]string "{"error": "validation failed"}"
+// @Failure 500 {object} map[string]string "{"error": "Internal server error"}"
+// @Security ApiKeyAuth
+// @Router /admin/book [post]
 func PostNewBook(c *gin.Context) {
 	newBookInfo := &types.NewBookInfo{}
 	if err := c.ShouldBindJSON(newBookInfo); err != nil {
@@ -154,6 +184,19 @@ func PostNewBook(c *gin.Context) {
 	})
 }
 
+// @Summary Update a book
+// @Description Update an existing book's information (Admin only)
+// @Tags Admin
+// @Accept  json
+// @Produce  json
+// @Param   book     body    types.NewBookInfo     true        "Book Info to Update"
+// @Success 200 {object} map[string]models.Book "{"data": models.Book}"
+// @Failure 400 {object} map[string]string "{"error": "error_message"}"
+// @Failure 404 {object} map[string]string "{"error": "Assigned book not found"}"
+// @Failure 422 {object} map[string]string "{"error": "validation failed"}"
+// @Failure 500 {object} map[string]string "{"error": "Internal server error"}"
+// @Security ApiKeyAuth
+// @Router /admin/book [put]
 func UpdateBook(c *gin.Context) {
 	newBookInfo := &types.NewBookInfo{}
 	if err := c.ShouldBindJSON(newBookInfo); err != nil {
@@ -239,6 +282,16 @@ func UpdateBook(c *gin.Context) {
 	})
 }
 
+// @Summary Delete a book
+// @Description Delete a book by its ISBN (Admin only)
+// @Tags Admin
+// @Produce  json
+// @Param   isbn     path    string     true        "Book ISBN"
+// @Success 204 "No Content"
+// @Failure 404 {object} map[string]string "{"error": "Target book not exist"}"
+// @Failure 500 {object} map[string]string "{"error": "Internal server error"}"
+// @Security ApiKeyAuth
+// @Router /admin/book/del/{isbn} [delete]
 func DelBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 

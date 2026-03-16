@@ -18,6 +18,20 @@ import (
 var bookNumInsufficientErr = errors.New("Insufficient book stock quantity")
 var bookDataDisappearErr = errors.New("Unknown error cause book data disappeared")
 
+// @Summary Lend a book
+// @Description Lend a book to a user. Requires authentication.
+// @Tags Lend
+// @Accept  json
+// @Produce  json
+// @Param   borrow_request     body    types.BorrowRequire     true        "Borrow Request"
+// @Success 201 {object} map[string]models.LendRecord "{"data": models.LendRecord}"
+// @Failure 400 {object} map[string]string "{"error": "error_message"}"
+// @Failure 403 {object} map[string]string "{"error": "only admin can borrow for others"}"
+// @Failure 404 {object} map[string]string "{"error": "Required book not found"}"
+// @Failure 409 {object} map[string]string "{"error": "Insufficient book stock quantity"}"
+// @Failure 500 {object} map[string]string "{"error": "Internal server error"}"
+// @Security ApiKeyAuth
+// @Router /borrow [post]
 func LendBook(c *gin.Context) {
 	newLendRequire := &types.BorrowRequire{}
 	env := pkg.ReadCtxEnv(c, newLendRequire)
@@ -108,6 +122,19 @@ func LendBook(c *gin.Context) {
 	})
 }
 
+// @Summary Return a book
+// @Description Return a borrowed book. Requires authentication.
+// @Tags Lend
+// @Accept  json
+// @Produce  json
+// @Param   return_request     body    types.BorrowRequire     true        "Return Request"
+// @Success 200 {object} map[string]models.LendRecord "{"data": models.LendRecord}"
+// @Failure 400 {object} map[string]string "{"error": "error_message"}"
+// @Failure 403 {object} map[string]string "{"error": "only admin can return for others"}"
+// @Failure 404 {object} map[string]string "{"error": "Borrow record not found"}"
+// @Failure 500 {object} map[string]string "{"error": "Internal server error"}"
+// @Security ApiKeyAuth
+// @Router /return [post]
 func ReturnBook(c *gin.Context) {
 	newReturnRequire := &types.BorrowRequire{}
 	env := pkg.ReadCtxEnv(c, newReturnRequire)
@@ -199,6 +226,15 @@ func ReturnBook(c *gin.Context) {
 	})
 }
 
+// @Summary Get user's borrow records
+// @Description Get all borrow records for the currently authenticated user.
+// @Tags Lend
+// @Produce  json
+// @Success 200 {object} map[string][]types.LendRecordResponse "{"data": []types.LendRecordResponse}"
+// @Failure 403 {object} map[string]string "{"error": "can't read ID from env"}"
+// @Failure 500 {object} map[string]string "{"error": "Internal server error"}"
+// @Security ApiKeyAuth
+// @Router /user/borrows [get]
 func GetUserRecord(c *gin.Context) {
 	userIDAny, ok := c.Get("ID")
 	if !ok {

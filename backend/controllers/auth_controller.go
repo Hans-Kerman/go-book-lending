@@ -13,6 +13,17 @@ import (
 	"gorm.io/gorm"
 )
 
+// @Summary Register a new user
+// @Description Register a new user with username and password
+// @Tags Auth
+// @Accept  json
+// @Produce  json
+// @Param   user     body    types.NewUser     true        "User info"
+// @Success 201 {object} map[string]string "{"token": "jwt_token"}"
+// @Failure 400 {object} map[string]string "{"error": "error_message"}"
+// @Failure 409 {object} map[string]string "{"error": "name conflict"}"
+// @Failure 500 {object} map[string]string "{"error": "error_message"}"
+// @Router /public/register [post]
 func Register(c *gin.Context) {
 	newUserRequest := &types.NewUser{}
 	if ok := pkg.BindNewUser(c, newUserRequest); !ok {
@@ -63,6 +74,17 @@ func Register(c *gin.Context) {
 	})
 }
 
+// @Summary Login a user
+// @Description Login a user with username and password
+// @Tags Auth
+// @Accept  json
+// @Produce  json
+// @Param   user     body    types.NewUser     true        "User credentials"
+// @Success 200 {object} map[string]string "{"token": "jwt_token"}"
+// @Failure 400 {object} map[string]string "{"error": "error_message"}"
+// @Failure 401 {object} map[string]string "{"error": "username or password incorrect"}"
+// @Failure 500 {object} map[string]string "{"error": "error_message"}"
+// @Router /public/login [post]
 func Login(c *gin.Context) {
 	newUserRequest := &types.NewUser{}
 	if ok := pkg.BindNewUser(c, newUserRequest); !ok {
