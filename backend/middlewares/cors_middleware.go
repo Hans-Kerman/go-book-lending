@@ -5,7 +5,7 @@ import (
 )
 
 var CORSConf = cors.Config{
-	AllowOrigins:     []string{"localhost:3000"},
+	AllowOrigins:     []string{"http://localhost:3000"},
 	AllowMethods:     []string{"GET", "POST"},
 	AllowHeaders:     []string{"Origin", "Content-type", "Authorization"},
 	ExposeHeaders:    []string{"Content-Length"},
