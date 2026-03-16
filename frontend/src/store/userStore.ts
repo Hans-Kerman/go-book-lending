@@ -13,7 +13,7 @@ import { jwtDecode } from 'jwt-decode';
 interface JwtPayload {
   user_id: number;
   user_name: string;
-  role: 'admin' | 'user';
+  role: number;
   exp: number;
   iat: number;
 }
@@ -54,10 +54,11 @@ const decodeToken = (token: string): User | null => {
       console.warn("Token has expired.");
       return null;
     }
+    // 后端的 role 是 uint8：0 为 Admin，1 为 Reader
     return {
       id: decoded.user_id,
       name: decoded.user_name,
-      role: decoded.role,
+      role: decoded.role === 0 ? 'admin' : 'user',
     };
   } catch (error) {
     console.error("Failed to decode token:", error);
