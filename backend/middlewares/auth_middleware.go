@@ -89,7 +89,7 @@ func ParseJWT() gin.HandlerFunc {
 			}
 		}
 
-		ctx.Set("ID", parsedClaims.ID)
+		ctx.Set("ID", parsedClaims.UserID)
 		ctx.Set("Username", parsedClaims.UserName)
 		ctx.Set("Role", parsedClaims.Role)
 
