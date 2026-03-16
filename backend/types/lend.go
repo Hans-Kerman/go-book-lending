@@ -3,8 +3,8 @@ package types
 import "time"
 
 type BorrowRequire struct {
-	BorrowReader uint   `json:"borrow_reader" binding:"required"`
-	BookID       string `json:"book_id" binding:"required"`
+	BorrowReader uint   `json:"borrow_reader" binding:"required" example:"1"`
+	BookID       string `json:"book_id" binding:"required" example:"978-0134190440"`
 }
 
 type LendRecordResponse struct {

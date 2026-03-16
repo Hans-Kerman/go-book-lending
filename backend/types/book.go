@@ -1,10 +1,10 @@
 package types
 
 type NewBookInfo struct {
-	Title          string `json:"title" binding:"required"`
-	Author         string `json:"author"`
-	ISBN           string `json:"isbn" binding:"required"`
-	Price          int    `json:"price"`
-	CoverPicBase64 []byte `json:"cover_pic_base64"`
-	Available      *int   `json:"available"`
+	Title          string `json:"title" binding:"required" example:"The Go Programming Language"`
+	Author         string `json:"author" example:"Alan A. A. Donovan"`
+	ISBN           string `json:"isbn" binding:"required" example:"978-0134190440"`
+	Price          int    `json:"price" example:"40"`
+	CoverPicBase64 []byte `json:"cover_pic_base64" example:"base64_encoded_image_data"`
+	Available      *int   `json:"available" example:"10"`
 }
