@@ -70,7 +70,7 @@ const MyBorrowsPage: React.FC = () => {
   return (
     <div>
       <Title level={2}>我的借阅记录</Title>
-      <Table columns={columns} dataSource={records} rowKey="id" />
+      <Table columns={columns} dataSource={records} rowKey="id" pagination={{ pageSize: 10 }} />
     </div>
   );
 };
