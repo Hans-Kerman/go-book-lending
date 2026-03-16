@@ -4,13 +4,15 @@ import { BrowserRouter as Router, Routes, Route, Link, Outlet, useNavigate } fro
 import { Layout, Menu, theme, Spin, Button, Typography, Dropdown } from 'antd';
 import { useUserStore } from './store/userStore';
 
-const { Header, Content, Footer } = Layout;
-
 // 懒加载页面组件
-// 注意：这里的路径现在指向目录，而不是具体文件
-const HomePage = React.lazy(() => import('./pages/Home')); 
+const HomePage = React.lazy(() => import('./pages/Home'));
 const LoginPage = React.lazy(() => import('./pages/Auth/Login'));
 const RegisterPage = React.lazy(() => import('./pages/Auth/Register'));
+const MyBorrowsPage = React.lazy(() => import('./pages/User/MyBorrows'));
+const BookManagementPage = React.lazy(() => import('./pages/Admin/BookManagement'));
+
+// 路由守卫组件
+import PrivateRoute from './routes/PrivateRoute';
 
 // 全屏加载指示器
 const FullScreenSpinner: React.FC = () => (
@@ -18,6 +20,8 @@ const FullScreenSpinner: React.FC = () => (
     <Spin size="large" />
   </div>
 );
+
+const { Header, Content, Footer } = Layout;
 
 const AppLayout: React.FC = () => {
   const {
@@ -87,7 +91,6 @@ const AppLayout: React.FC = () => {
             borderRadius: borderRadiusLG,
           }}
         >
-          {/* Suspense 的 fallback 会在懒加载组件下载和解析时显示 */}
           <Suspense fallback={<Spin />}>
             <Outlet />
           </Suspense>
@@ -102,14 +105,21 @@ const AppLayout: React.FC = () => {
 
 const App: React.FC = () => (
   <Router>
-    {/* Suspense 需要放在路由定义的外层，以便在切换路由、加载新组件时显示 fallback */}
     <Suspense fallback={<FullScreenSpinner />}>
       <Routes>
         <Route path="/" element={<AppLayout />}>
           <Route index element={<HomePage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
-          {/* 后续页面将在这里添加 */}
+
+          {/* 受保护的路由 */}
+          <Route element={<PrivateRoute />}>
+            <Route path="user/borrows" element={<MyBorrowsPage />} />
+          </Route>
+          
+          <Route element={<PrivateRoute allowedRoles={['admin']} />}>
+            <Route path="admin/books" element={<BookManagementPage />} />
+          </Route>
         </Route>
       </Routes>
     </Suspense>
