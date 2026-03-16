@@ -1,7 +1,8 @@
 // src/App.tsx
 import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Outlet } from 'react-router-dom';
-import { Layout, Menu, theme, Spin } from 'antd';
+import { BrowserRouter as Router, Routes, Route, Link, Outlet, useNavigate } from 'react-router-dom';
+import { Layout, Menu, theme, Spin, Button, Typography, Dropdown } from 'antd';
+import { useUserStore } from './store/userStore';
 
 const { Header, Content, Footer } = Layout;
 
@@ -22,15 +23,60 @@ const AppLayout: React.FC = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+  const { isAuthenticated, user, logout } = useUserStore();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const userMenu = (
+    <Menu>
+      <Menu.Item key="username" disabled>
+        <Typography.Text>你好, {user?.name}</Typography.Text>
+      </Menu.Item>
+      <Menu.Divider />
+      {user?.role === 'admin' && (
+        <Menu.Item key="admin">
+          <Link to="/admin/books">图书管理</Link>
+        </Menu.Item>
+      )}
+      <Menu.Item key="my-borrows">
+        <Link to="/user/borrows">我的借阅</Link>
+      </Menu.Item>
+      <Menu.Divider />
+      <Menu.Item key="logout" onClick={handleLogout}>
+        退出登录
+      </Menu.Item>
+    </Menu>
+  );
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Header style={{ display: 'flex', alignItems: 'center' }}>
-        <div className="logo" style={{ color: 'white', marginRight: '24px' }}>图书系统</div>
-        <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['1']}>
-          <Menu.Item key="1"><Link to="/">首页</Link></Menu.Item>
-          <Menu.Item key="2"><Link to="/login">登录</Link></Menu.Item>
-        </Menu>
+      <Header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div className="logo" style={{ color: 'white', marginRight: '24px' }}>图书系统</div>
+          <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['1']} items={[
+            { key: '1', label: <Link to="/">首页</Link> },
+          ]} />
+        </div>
+        <div>
+          {isAuthenticated ? (
+            <Dropdown menu={{ items: userMenu.props.items }} placement="bottomRight">
+              <Button type="primary">欢迎, {user?.name}</Button>
+            </Dropdown>
+          ) : (
+            <>
+              <Button type="primary" style={{ marginRight: '10px' }} onClick={() => navigate('/login')}>
+                登录
+              </Button>
+              <Button onClick={() => navigate('/register')}>
+                注册
+              </Button>
+            </>
+          )}
+        </div>
       </Header>
       <Content style={{ padding: '48px' }}>
         <div

@@ -2,21 +2,23 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card, Form, Input, Button, message } from 'antd';
+import { useUserStore } from '../../store/userStore';
 import apiClient from '../../services/api';
 import type { AuthCredentials } from '../../types';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = React.useState(false);
+  const setToken = useUserStore((state) => state.setToken);
 
   const onFinish = async (values: AuthCredentials) => {
     setLoading(true);
     try {
       const response = await apiClient.post('/public/login', values);
       if (response.data && response.data.token) {
-        localStorage.setItem('jwt_token', response.data.token);
+        setToken(response.data.token); // 使用 store action 来更新状态
         message.success('登录成功！');
-        navigate('/');
+        navigate('/'); // 跳转到首页
       } else {
         message.error(response.data.error || '登录失败，请稍后重试');
       }

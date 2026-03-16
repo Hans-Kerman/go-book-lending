@@ -2,20 +2,22 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card, Form, Input, Button, message } from 'antd';
+import { useUserStore } from '../../store/userStore';
 import apiClient from '../../services/api';
 import type { AuthCredentials } from '../../types';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = React.useState(false);
+  const setToken = useUserStore((state) => state.setToken);
 
   const onFinish = async (values: AuthCredentials) => {
     setLoading(true);
     try {
       const response = await apiClient.post('/public/register', values);
       if (response.data && response.data.token) {
-        // 注册成功，存储 token 并跳转
-        localStorage.setItem('jwt_token', response.data.token);
+        // 注册成功，使用 store action 更新状态
+        setToken(response.data.token);
         message.success('注册成功！已自动为您登录。');
         navigate('/');
       } else {
