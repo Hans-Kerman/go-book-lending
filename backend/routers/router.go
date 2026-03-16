@@ -5,10 +5,16 @@ import (
 	"github.com/Hans-Kerman/go-book-lending/backend/middlewares"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
+	_ "github.com/Hans-Kerman/go-book-lending/backend/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.Use(cors.New(middlewares.CORSConf))
 
