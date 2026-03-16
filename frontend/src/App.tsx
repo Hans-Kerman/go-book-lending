@@ -5,7 +5,8 @@ import { Layout, Menu, theme, Spin, Button, Typography, Dropdown } from 'antd';
 import { useUserStore } from './store/userStore';
 
 // 懒加载页面组件
-const HomePage = React.lazy(() => import('./pages/Home'));
+const BookListPage = React.lazy(() => import('./pages/Book/BookList'));
+const BookDetailPage = React.lazy(() => import('./pages/Book/BookDetail'));
 const LoginPage = React.lazy(() => import('./pages/Auth/Login'));
 const RegisterPage = React.lazy(() => import('./pages/Auth/Register'));
 const MyBorrowsPage = React.lazy(() => import('./pages/User/MyBorrows'));
@@ -108,7 +109,8 @@ const App: React.FC = () => (
     <Suspense fallback={<FullScreenSpinner />}>
       <Routes>
         <Route path="/" element={<AppLayout />}>
-          <Route index element={<HomePage />} />
+          <Route index element={<BookListPage />} />
+          <Route path="book/:isbn" element={<BookDetailPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
 
