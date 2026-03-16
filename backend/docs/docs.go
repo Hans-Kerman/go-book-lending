@@ -73,7 +73,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "{\"error\": \"Assigned book not found\"}",
+                        "description": "{\"error\": \"Assigned\tbook\tnot\tfound\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -82,7 +82,7 @@ const docTemplate = `{
                         }
                     },
                     "422": {
-                        "description": "{\"error\": \"validation failed\"}",
+                        "description": "{\"error\": \"validation\tfailed\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -91,7 +91,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "{\"error\": \"Internal server error\"}",
+                        "description": "{\"error\": \"Internal\tserver\terror\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -149,7 +149,7 @@ const docTemplate = `{
                         }
                     },
                     "422": {
-                        "description": "{\"error\": \"validation failed\"}",
+                        "description": "{\"error\": \"validation\tfailed\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -158,7 +158,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "{\"error\": \"Internal server error\"}",
+                        "description": "{\"error\": \"Internal\tserver\terror\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -198,7 +198,7 @@ const docTemplate = `{
                         "description": "No Content"
                     },
                     "404": {
-                        "description": "{\"error\": \"Target book not exist\"}",
+                        "description": "{\"error\": \"Target\t\tbook\tnot\texist\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -207,7 +207,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "{\"error\": \"Internal server error\"}",
+                        "description": "{\"error\": \"Internal\tserver\terror\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -267,7 +267,7 @@ const docTemplate = `{
                         }
                     },
                     "403": {
-                        "description": "{\"error\": \"only admin can borrow for others\"}",
+                        "description": "{\"error\": \"only\t\t\tadmin\tcan\t\tborrow\tfor\tothers\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -276,7 +276,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "{\"error\": \"Required book not found\"}",
+                        "description": "{\"error\": \"Required\t\tbook\tnot\t\tfound\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -285,7 +285,7 @@ const docTemplate = `{
                         }
                     },
                     "409": {
-                        "description": "{\"error\": \"Insufficient book stock quantity\"}",
+                        "description": "{\"error\": \"Insufficient\tbook\tstock\tquantity\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -294,7 +294,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "{\"error\": \"Internal server error\"}",
+                        "description": "{\"error\": \"Internal\t\tserver\terror\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -335,7 +335,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "{\"error\": \"Book not found\"}",
+                        "description": "{\"error\": \"Book\t\tnot\t\tfound\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -344,7 +344,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "{\"error\": \"Internal server error\"}",
+                        "description": "{\"error\": \"Internal\tserver\terror\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -388,7 +388,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "{\"error\": \"Internal server error\"}",
+                        "description": "{\"error\": \"Internal\tserver\terror\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -443,7 +443,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "{\"error\": \"username or password incorrect\"}",
+                        "description": "{\"error\": \"username\tor\tpassword\tincorrect\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -507,7 +507,7 @@ const docTemplate = `{
                         }
                     },
                     "409": {
-                        "description": "{\"error\": \"name conflict\"}",
+                        "description": "{\"error\": \"name\tconflict\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -576,7 +576,7 @@ const docTemplate = `{
                         }
                     },
                     "403": {
-                        "description": "{\"error\": \"only admin can return for others\"}",
+                        "description": "{\"error\": \"only\t\tadmin\tcan\treturn\tfor\tothers\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -585,7 +585,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "{\"error\": \"Borrow record not found\"}",
+                        "description": "{\"error\": \"Borrow\t\trecord\tnot\tfound\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -594,7 +594,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "{\"error\": \"Internal server error\"}",
+                        "description": "{\"error\": \"Internal\tserver\terror\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -634,7 +634,7 @@ const docTemplate = `{
                         }
                     },
                     "403": {
-                        "description": "{\"error\": \"can't read ID from env\"}",
+                        "description": "{\"error\": \"can't\t\tread\tID\tfrom\tenv\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -643,7 +643,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "{\"error\": \"Internal server error\"}",
+                        "description": "{\"error\": \"Internal\tserver\terror\"}",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
