@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Spin, Alert, Row, Col, Image, Typography, Button, message, Descriptions } from 'antd';
 import apiClient from '../../services/api';
 import { useUserStore } from '../../store/userStore';
-import type { Book } from '../../types';
+import type { Book, LendRecordResponse } from '../../types';
 
 const { Title, Paragraph } = Typography;
 
@@ -17,23 +17,36 @@ const BookDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [book, setBook] = useState<Book | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [isBorrowed, setIsBorrowed] = useState(false);
 
   useEffect(() => {
-    const fetchBook = async () => {
+    const fetchData = async () => {
       if (!isbn) return;
       setLoading(true);
       setError(null);
       try {
-        const response = await apiClient.get<{ book: Book }>(`/public/book/${isbn}`);
-        setBook(response.data.book);
-      } catch (err) {
+        // 1. 获取书籍详情
+        const bookResponse = await apiClient.get<{ book: Book }>(`/public/book/${isbn}`);
+        const fetchedBook = bookResponse.data.book;
+        setBook(fetchedBook);
+
+        // 2. 如果用户已登录，获取其借阅记录以判断是否已借阅此书
+        if (isAuthenticated && user) {
+          const borrowsResponse = await apiClient.get<{ data: LendRecordResponse[] }>(`/user/borrows`);
+          const userRecords = borrowsResponse.data.data || [];
+          const hasBorrowed = userRecords.some(
+            record => record.book_id === isbn && !record.return_time
+          );
+          setIsBorrowed(hasBorrowed);
+        }
+      } catch {
         setError('无法加载书籍详情，请检查书籍ISBN是否正确或稍后再试。');
       } finally {
         setLoading(false);
       }
     };
-    fetchBook();
-  }, [isbn]);
+    fetchData();
+  }, [isbn, isAuthenticated, user]);
 
   const handleBorrow = async () => {
     if (!isAuthenticated || !user) {
@@ -45,10 +58,11 @@ const BookDetailPage: React.FC = () => {
     try {
       await apiClient.post('/borrow', { book_id: isbn, borrow_reader: user.id });
       message.success('借阅成功！');
-      // 可以选择跳转到“我的借阅”页面或刷新当前页面信息
-      // 为了简单起见，我们暂时只显示消息
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || '借阅失败';
+      setIsBorrowed(true);
+      // 乐观更新UI
+      setBook(prevBook => prevBook ? { ...prevBook, available: prevBook.available - 1 } : null);
+    } catch (err) {
+      const errorMsg = (err as { response?: { data?: { error: string } } }).response?.data?.error || '借阅失败';
       message.error(errorMsg);
     } finally {
       setActionLoading(false);
@@ -66,8 +80,11 @@ const BookDetailPage: React.FC = () => {
     try {
       await apiClient.post('/return', { book_id: isbn, borrow_reader: user.id });
       message.success('还书成功！');
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || '还书失败';
+      setIsBorrowed(false);
+      // 乐观更新UI
+      setBook(prevBook => prevBook ? { ...prevBook, available: prevBook.available + 1 } : null);
+    } catch (err) {
+      const errorMsg = (err as { response?: { data?: { error: string } } }).response?.data?.error || '还书失败';
       message.error(errorMsg);
     } finally {
       setActionLoading(false);
@@ -106,23 +123,28 @@ const BookDetailPage: React.FC = () => {
         <Paragraph style={{ marginTop: '20px' }}>
           这里是书籍的详细介绍... (暂无)
         </Paragraph>
-        <div style={{ marginTop: '24px' }}>
-          <Button 
-            type="primary" 
-            style={{ marginRight: '16px' }}
-            onClick={handleBorrow}
-            loading={actionLoading}
-            disabled={book.available <= 0}
-          >
-            {book.available > 0 ? '立即借阅' : '已无库存'}
-          </Button>
-          <Button
-            onClick={handleReturn}
-            loading={actionLoading}
-          >
-            归还本书
-          </Button>
-        </div>
+        {isAuthenticated && (
+          <div style={{ marginTop: '24px' }}>
+            {isBorrowed ? (
+              <Button
+                type="primary"
+                onClick={handleReturn}
+                loading={actionLoading}
+              >
+                归还本书
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                onClick={handleBorrow}
+                loading={actionLoading}
+                disabled={book.available <= 0}
+              >
+                {book.available > 0 ? '立即借阅' : '已无库存'}
+              </Button>
+            )}
+          </div>
+        )}
       </Col>
     </Row>
   );
