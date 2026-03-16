@@ -1,0 +1,546 @@
+basePath: /api
+definitions:
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  models.Book:
+    properties:
+      author:
+        type: string
+      available:
+        description: 可借阅数量
+        type: integer
+      coverURL:
+        description: 存储图片的访问路径
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      isbn:
+        type: string
+      price:
+        description: 存储以分为单位的整数作为(赔偿凭据)金额——备用
+        type: integer
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.LendRecord:
+    properties:
+      bookID:
+        description: 使用ISBN书号
+        type: string
+      borrowReader:
+        type: integer
+      createdAt:
+        type: string
+      id:
+        type: integer
+      returnTime:
+        type: string
+    type: object
+  types.BorrowRequire:
+    properties:
+      book_id:
+        example: 978-0134190440
+        type: string
+      borrow_reader:
+        example: 1
+        type: integer
+    required:
+    - book_id
+    - borrow_reader
+    type: object
+  types.LendRecordResponse:
+    properties:
+      book_id:
+        type: string
+      borrow_reader:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      return_time:
+        type: string
+    type: object
+  types.NewBookInfo:
+    properties:
+      author:
+        example: Alan A. A. Donovan
+        type: string
+      available:
+        example: 10
+        type: integer
+      cover_pic_base64:
+        items:
+          type: integer
+        type: array
+      isbn:
+        example: 978-0134190440
+        type: string
+      price:
+        example: 40
+        type: integer
+      title:
+        example: The Go Programming Language
+        type: string
+    required:
+    - isbn
+    - title
+    type: object
+  types.NewUser:
+    properties:
+      password:
+        example: password123
+        minLength: 6
+        type: string
+      user_name:
+        example: testuser
+        maxLength: 50
+        minLength: 2
+        type: string
+    required:
+    - password
+    - user_name
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a book lending system API.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Go Book Lending API
+  version: "1.0"
+paths:
+  /admin/book:
+    post:
+      consumes:
+      - application/json
+      description: Add a new book to the database (Admin only)
+      parameters:
+      - description: New Book Info
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/types.NewBookInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"data": models.Book}'
+          schema:
+            additionalProperties:
+              $ref: '#/definitions/models.Book'
+            type: object
+        "400":
+          description: '{"error": "error_message"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: '{"error": "validation failed"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: '{"error": "Internal server error"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Add a new book
+      tags:
+      - Admin
+    put:
+      consumes:
+      - application/json
+      description: Update an existing book's information (Admin only)
+      parameters:
+      - description: Book Info to Update
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/types.NewBookInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"data": models.Book}'
+          schema:
+            additionalProperties:
+              $ref: '#/definitions/models.Book'
+            type: object
+        "400":
+          description: '{"error": "error_message"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: '{"error": "Assigned book not found"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: '{"error": "validation failed"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: '{"error": "Internal server error"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Update a book
+      tags:
+      - Admin
+  /admin/book/del/{isbn}:
+    delete:
+      description: Delete a book by its ISBN (Admin only)
+      parameters:
+      - description: Book ISBN
+        in: path
+        name: isbn
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: '{"error": "Target book not exist"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: '{"error": "Internal server error"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a book
+      tags:
+      - Admin
+  /borrow:
+    post:
+      consumes:
+      - application/json
+      description: Lend a book to a user. Requires authentication.
+      parameters:
+      - description: Borrow Request
+        in: body
+        name: borrow_request
+        required: true
+        schema:
+          $ref: '#/definitions/types.BorrowRequire'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: '{"data": models.LendRecord}'
+          schema:
+            additionalProperties:
+              $ref: '#/definitions/models.LendRecord'
+            type: object
+        "400":
+          description: '{"error": "error_message"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: '{"error": "only admin can borrow for others"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: '{"error": "Required book not found"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: '{"error": "Insufficient book stock quantity"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: '{"error": "Internal server error"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Lend a book
+      tags:
+      - Lend
+  /public/book/{isbn}:
+    get:
+      description: Get a single book by its ISBN
+      parameters:
+      - description: Book ISBN
+        in: path
+        name: isbn
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"book": models.Book}'
+          schema:
+            additionalProperties:
+              $ref: '#/definitions/models.Book'
+            type: object
+        "404":
+          description: '{"error": "Book not found"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: '{"error": "Internal server error"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a book by ISBN
+      tags:
+      - Books
+  /public/books:
+    get:
+      description: Get a paginated list of books
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"total": 1, "page": 1, "page_size": 20, "totalPages": 1,
+            "books": []models.Book}'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: '{"error": "Internal server error"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get books by page
+      tags:
+      - Books
+  /public/login:
+    post:
+      consumes:
+      - application/json
+      description: Login a user with username and password
+      parameters:
+      - description: User credentials
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/types.NewUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"token": "jwt_token"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: '{"error": "error_message"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: '{"error": "username or password incorrect"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: '{"error": "error_message"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login a user
+      tags:
+      - Auth
+  /public/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with username and password
+      parameters:
+      - description: User info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/types.NewUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: '{"token": "jwt_token"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: '{"error": "error_message"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: '{"error": "name conflict"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: '{"error": "error_message"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - Auth
+  /return:
+    post:
+      consumes:
+      - application/json
+      description: Return a borrowed book. Requires authentication.
+      parameters:
+      - description: Return Request
+        in: body
+        name: return_request
+        required: true
+        schema:
+          $ref: '#/definitions/types.BorrowRequire'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"data": models.LendRecord}'
+          schema:
+            additionalProperties:
+              $ref: '#/definitions/models.LendRecord'
+            type: object
+        "400":
+          description: '{"error": "error_message"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: '{"error": "only admin can return for others"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: '{"error": "Borrow record not found"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: '{"error": "Internal server error"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Return a book
+      tags:
+      - Lend
+  /user/borrows:
+    get:
+      description: Get all borrow records for the currently authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"data": []types.LendRecordResponse}'
+          schema:
+            additionalProperties:
+              items:
+                $ref: '#/definitions/types.LendRecordResponse'
+              type: array
+            type: object
+        "403":
+          description: '{"error": "can''t read ID from env"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: '{"error": "Internal server error"}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get user's borrow records
+      tags:
+      - Lend
+schemes:
+- http
+securityDefinitions:
+  ApiKeyAuth:
+    description: '"Type ''Bearer YOUR_JWT_TOKEN'' to authenticate."'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
