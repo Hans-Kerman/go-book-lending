@@ -17,6 +17,26 @@ import (
 	"github.com/lmittmann/tint"
 )
 
+// @title Go Book Lending API
+// @version 1.0
+// @description This is a book lending system API.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /api
+// @schemes http
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+// @description "Type 'Bearer YOUR_JWT_TOKEN' to authenticate."
 func main() {
 	slog.SetDefault(slog.New(
 		tint.NewHandler(os.Stdout, &tint.Options{
