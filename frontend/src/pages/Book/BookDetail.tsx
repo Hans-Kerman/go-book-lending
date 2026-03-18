@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Spin, Alert, Row, Col, Image, Typography, Button, message, Descriptions } from 'antd';
 import apiClient from '../../services/api';
 import { useUserStore } from '../../store/userStore';
+import { BACKEND_SERVER_URL } from '../../config';
 import type { Book, LendRecordResponse } from '../../types';
 
 const { Title, Paragraph } = Typography;
@@ -37,7 +38,7 @@ const BookDetailPage: React.FC = () => {
           isbn: b.ISBN ?? b.isbn,
           title: b.Title ?? b.title,
           author: b.Author ?? b.author,
-          coverURL: b.CoverURL ?? b.coverURL,
+          coverURL: (b.CoverURL || b.coverURL) ? `${BACKEND_SERVER_URL}${(b.CoverURL || b.coverURL)}` : '',
           available: b.Available ?? b.available,
           price: b.Price ?? b.price,
         };

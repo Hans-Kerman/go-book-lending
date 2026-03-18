@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Button, Space, Popconfirm, message, Alert, Modal, Form, Input, InputNumber, Upload } from 'antd';
 import type { TablePaginationConfig } from 'antd';
 import apiClient from '../../services/api';
+import { BACKEND_SERVER_URL } from '../../config';
 import type { Book } from '../../types';
 
 // 定义表单和模态框的状态
@@ -45,7 +46,7 @@ const BookManagementPage: React.FC = () => {
         isbn: b.ISBN ?? b.isbn,
         title: b.Title ?? b.title,
         author: b.Author ?? b.author,
-        coverURL: b.CoverURL ?? b.coverURL,
+        coverURL: (b.CoverURL || b.coverURL) ? `${BACKEND_SERVER_URL}${(b.CoverURL || b.coverURL)}` : '',
         available: b.Available ?? b.available,
         price: b.Price ?? b.price,
       }));

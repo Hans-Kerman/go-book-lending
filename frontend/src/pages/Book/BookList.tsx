@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { List, Card, Spin, Alert, Pagination, Typography } from 'antd';
 import { Link } from 'react-router-dom';
 import apiClient from '../../services/api';
+import { BACKEND_SERVER_URL } from '../../config';
 import type { Book } from '../../types';
 
 const { Meta } = Card;
@@ -45,7 +46,7 @@ const BookListPage: React.FC = () => {
           isbn: b.ISBN ?? b.isbn,
           title: b.Title ?? b.title,
           author: b.Author ?? b.author,
-          coverURL: b.CoverURL ?? b.coverURL,
+          coverURL: (b.CoverURL || b.coverURL) ? `${BACKEND_SERVER_URL}${(b.CoverURL || b.coverURL)}` : '',
           available: b.Available ?? b.available,
           price: b.Price ?? b.price,
         }));
