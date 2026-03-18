@@ -7,11 +7,12 @@ import type { Book } from '../../types';
 
 const { Meta } = Card;
 
+// 保持接口定义
 interface BooksResponse {
   total: number;
   page: number;
   page_size: number;
-  totalPages: number;
+  totalPages?: number;
   books: Book[];
 }
 
@@ -27,13 +28,32 @@ const BookListPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await apiClient.get<BooksResponse>('/public/books', {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const response = await apiClient.get<any>('/public/books', {
           params: {
             page: currentPage,
             page_size: pageSize,
           },
         });
-        setData(response.data);
+        
+        // 兼容后端返回的大写字段名
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const normalizedBooks: Book[] = (response.data.books || []).map((b: any) => ({
+          id: b.ID ?? b.id,
+          createdAt: b.CreatedAt ?? b.createdAt,
+          updatedAt: b.UpdatedAt ?? b.updatedAt,
+          isbn: b.ISBN ?? b.isbn,
+          title: b.Title ?? b.title,
+          author: b.Author ?? b.author,
+          coverURL: b.CoverURL ?? b.coverURL,
+          available: b.Available ?? b.available,
+          price: b.Price ?? b.price,
+        }));
+        
+        setData({
+          ...response.data,
+          books: normalizedBooks
+        });
       } catch (err) {
         console.error('获取图书列表失败:', err);
         setError('获取图书列表失败，请稍后再试。');

@@ -26,8 +26,21 @@ const BookDetailPage: React.FC = () => {
       setError(null);
       try {
         // 1. 获取书籍详情
-        const bookResponse = await apiClient.get<{ book: Book }>(`/public/book/${isbn}`);
-        const fetchedBook = bookResponse.data.book;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const bookResponse = await apiClient.get<any>(`/public/book/${isbn}`);
+        // 兼容后端返回的大写字段名
+        const b = bookResponse.data.book || bookResponse.data.Book || bookResponse.data;
+        const fetchedBook: Book = {
+          id: b.ID ?? b.id,
+          createdAt: b.CreatedAt ?? b.createdAt,
+          updatedAt: b.UpdatedAt ?? b.updatedAt,
+          isbn: b.ISBN ?? b.isbn,
+          title: b.Title ?? b.title,
+          author: b.Author ?? b.author,
+          coverURL: b.CoverURL ?? b.coverURL,
+          available: b.Available ?? b.available,
+          price: b.Price ?? b.price,
+        };
         setBook(fetchedBook);
 
         // 2. 如果用户已登录，获取其借阅记录以判断是否已借阅此书
