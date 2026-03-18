@@ -22,10 +22,15 @@ func InitStaticDir() error {
 }
 
 func ParsePicName(picBytes []byte) string {
+	if len(picBytes) == 0 {
+		return defaultPicPath
+	}
+
 	hash := sha256.Sum256(picBytes)
 	hexStr := hex.EncodeToString(hash[:])
 
-	err := os.WriteFile(filepath.Join(coverPicDir, hexStr+".jpg"), picBytes, 0644)
+	// 注意：这里需要加上 "." 前缀，以相对路径的形式存入项目根目录
+	err := os.WriteFile(filepath.Join("."+coverPicDir, hexStr+".jpg"), picBytes, 0644)
 	if err != nil {
 		return defaultPicPath
 	}
